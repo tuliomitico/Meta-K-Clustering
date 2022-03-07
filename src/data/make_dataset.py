@@ -1,5 +1,5 @@
 import os
-import typing as t
+import sys
 from pathlib import Path
 
 from sklearn.datasets import fetch_openml
@@ -9,21 +9,30 @@ import pandas as pd
 
 from . import DATASETS
 
+if sys.version_info >= (3,7,11):
+  import typing as t
+  from typing import NamedTuple
+
+import typing_extensions as t
+from typing import NamedTuple
+
 class Details(t.TypedDict):
   """A class to mapping the return of a fetch in OpenML site.
   """
   name: str
   version: str
-class OpenMLData(t.NamedTuple):
+class OpenMLData(NamedTuple):
   """A class to mapping a dataset from OpenMl site.
   """
   data: pd.DataFrame
   target: pd.Series
   details: Details
 
-BASE_DIR = Path(Path.cwd()).resolve()
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 def make_dataset(id_list: 'list[int]' = DATASETS) -> None:
+  filepath = Path(BASE_DIR / "data/raw/")
+  filepath.parent.parent.mkdir(parents=True,exist_ok=True)
   template_name_file = 'data/raw/{name}_{version}.csv'
   for i in id_list:
     data: OpenMLData = fetch_openml(
@@ -43,11 +52,12 @@ def number_bins_fn(list_files_length: 'list[int]') -> 'np.int64':
   return np.ceil(np.sqrt(list_files_length.mean()))
 
 
-def read_raw_datasets():
+def read_raw_datasets(verbose=False):
   file_list = []
   for dirname,_,filenames in os.walk(BASE_DIR / 'data/raw'):
     for filename in filenames:
-      print(Path(os.path.join(dirname,filename)).stem)
+      if verbose:
+        print(Path(os.path.join(dirname,filename)).stem)
       file_list.append(pd.read_csv(os.path.join(dirname,filename)).shape[0])
-  print(number_bins_fn(file_list))
+  return file_list
 
