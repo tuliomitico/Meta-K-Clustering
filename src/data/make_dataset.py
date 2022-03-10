@@ -45,6 +45,7 @@ def make_dataset(id_list: 'list[int]' = DATASETS) -> None:
         index=False,
         mode='w'
     )
+    break
   return
 
 def number_bins_fn(list_files_length: 'list[int]') -> 'np.int64':
