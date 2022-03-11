@@ -49,16 +49,31 @@ def make_dataset(id_list: 'list[int]' = DATASETS) -> None:
   return
 
 def number_bins_fn(list_files_length: 'list[int]') -> 'np.int64':
-  list_files_length = check_array(list_files_length,ensure_2d = False)
+  list_files_length = check_array(list_files_length, ensure_2d = False)
   return np.ceil(np.sqrt(list_files_length.mean()))
 
 
-def read_raw_datasets(verbose=False):
+def read_raw_datasets(verbose: bool = False) -> 'list[int]':
+  """Read from the specified path all CSV datasets and append
+  your row length to a list.
+
+  Parameters
+  ----------
+  verbose : bool, optional
+      To see the files being loaded set this to True, by default False
+
+  Returns
+  -------
+  filelist : array-like
+      A array containing the length of datasets.
+  """
   file_list = []
   for dirname,_,filenames in os.walk(BASE_DIR / 'data/raw'):
     for filename in filenames:
       if verbose:
         print(Path(os.path.join(dirname,filename)).stem)
-      file_list.append(pd.read_csv(os.path.join(dirname,filename)).shape[0])
+      dataset = pd.read_csv(os.path.join(dirname, filename))
+      n, _ = dataset.shape
+      file_list.append(n)
   return file_list
 
