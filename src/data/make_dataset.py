@@ -7,7 +7,7 @@ from sklearn.utils import check_array
 import numpy as np
 import pandas as pd
 
-from . import DATASETS
+from ..utils.dataset_ids import DATASETS
 
 if sys.version_info >= (3,7,11):
   import typing as t
