@@ -1,6 +1,6 @@
 import os
-import sys
 from pathlib import Path
+from typing import NamedTuple
 
 from sklearn.datasets import fetch_openml
 from sklearn.utils import check_array
@@ -9,14 +9,12 @@ import pandas as pd
 
 from ..utils.dataset_ids import DATASETS
 
-if sys.version_info >= (3,7,11):
-  import typing as t
-  from typing import NamedTuple
+try:
+  from typing import TypedDict
+except ImportError:
+  from typing_extensions import TypedDict
 
-import typing_extensions as t
-from typing import NamedTuple
-
-class Details(t.TypedDict):
+class Details(TypedDict):
   """A class to mapping the return of a fetch in OpenML site.
   """
   name: str

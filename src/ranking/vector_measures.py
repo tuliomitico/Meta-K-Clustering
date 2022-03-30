@@ -1,11 +1,18 @@
-from typing import Literal, Union
+import sys
+from typing import Union
+
 import numpy as np
 import pandas as pd
 from sklearn.base import ClusterMixin
-from sklearn.mixture import GaussianMixture
 from sklearn.metrics.cluster import silhouette_score, davies_bouldin_score
+from sklearn.mixture import GaussianMixture
 
 from ..metrics import dunn_score, sd_dis_score, wgss_score
+
+try:
+  from typing import Literal
+except ImportError:
+  from typing_extensions import Literal
 
 def get_n_groups_information_criteria(
   dataset: Union[pd.DataFrame,np.ndarray],
@@ -52,15 +59,17 @@ def get_n_groups_information_criteria(
   index = values
   return ng, index
 
+
 def get_n_groups_elbow_technique(
   dataset: Union[pd.DataFrame,np.ndarray],
   estimator: ClusterMixin,
   min_nc:int,
-  max_nc:int
+  max_nc:int,
+  **est_args: dict
 ) -> "tuple[int,list[float]]":
   wgss = []
   for i in range(min_nc, max_nc + 1):
-    est = estimator(n_clusters  = i, random_state = 42)
+    est = estimator(n_clusters = i, random_state = 42, **est_args)
     est.fit(dataset)
     y_pred = est.predict(dataset)
     elbow = wgss_score(dataset, y_pred)
@@ -81,10 +90,33 @@ def get_n_groups_elbow_technique(
   index = wgss
   return ng, index
 
-def get_n_groups(
+def get_n_groups_max_diff(
+  dataset: Union[pd.DataFrame,np.ndarray],
+  estimator: ClusterMixin,
+  method: Literal['dunn','sil'],
+  min_nc:int,
+  max_nc:int,
+  **est_args: dict
+) -> "tuple[int,list[float]]":
+  values = []
+  for i in range(min_nc, max_nc + 1):
+    est = estimator(n_clusters = i, random_state = 42, **est_args)
+    est.fit(dataset)
+    y_pred = est.predict(dataset)
+    value = 0
+    if method == 'dunn':
+      value = dunn_score(dataset, y_pred)
+    elif method == 'sil':
+      value = silhouette_score(dataset, y_pred)
+    values.append(value)
+  ng = int(values.index(max(values)) + min_nc)
+  index = values
+  return ng, index
+
+def get_n_groups_min_diff(
   dataset: Union[pd.DataFrame, np.ndarray],
   estimator,
-  method: Literal['sddis','dunn','davies','sil'],
+  method: Literal['sddis','davies'],
   min_nc: int,
   max_nc: int,
   **est_args: dict
@@ -97,12 +129,8 @@ def get_n_groups(
     value = 0
     if method == 'sddis':
       value = sd_dis_score(dataset,y_pred)
-    elif method == 'dunn':
-      value = dunn_score(dataset,y_pred)
     elif method == 'davies':
       value = davies_bouldin_score(dataset,y_pred)
-    elif method == 'sil':
-      value = silhouette_score(dataset,y_pred)
     values.append(value)
   ng = int(values.index(min(values)) + min_nc)
   index = values
