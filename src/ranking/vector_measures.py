@@ -6,6 +6,7 @@ import pandas as pd
 from sklearn.base import ClusterMixin
 from sklearn.metrics.cluster import silhouette_score, davies_bouldin_score
 from sklearn.mixture import GaussianMixture
+from sklearn.utils import check_array
 
 from ..metrics import dunn_score, sd_dis_score, wgss_score
 
@@ -36,6 +37,7 @@ def get_n_groups_information_criteria(
   max_nc : int
       The maximum number of cluster to be calculated in a given range.
   """
+  X = check_array(dataset)
   values = []
   for i in range(min_nc,max_nc + 1):
     gm = GaussianMixture(
@@ -47,12 +49,12 @@ def get_n_groups_information_criteria(
       n_init=1,
       random_state=42
     )
-    gm.fit(dataset)
+    gm.fit(X)
     value = 0
     if method == 'bic':
-      value = gm.bic(dataset)
+      value = gm.bic(X)
     elif method == 'aic':
-      value = gm.aic(dataset)
+      value = gm.aic(X)
     values.append(value)
 
   ng = int(values.index(min(values)) + min_nc)
@@ -67,12 +69,13 @@ def get_n_groups_elbow_technique(
   max_nc:int,
   **est_args: dict
 ) -> "tuple[int,list[float]]":
+  X = check_array(dataset)
   wgss = []
   for i in range(min_nc, max_nc + 1):
     est = estimator(n_clusters = i, random_state = 42, **est_args)
-    est.fit(dataset)
-    y_pred = est.predict(dataset)
-    elbow = wgss_score(dataset, y_pred)
+    est.fit(X)
+    y_pred = est.predict(X)
+    elbow = wgss_score(X, y_pred)
     wgss.append(elbow)
   distances = []
   p1x = min_nc
@@ -98,16 +101,17 @@ def get_n_groups_max_diff(
   max_nc:int,
   **est_args: dict
 ) -> "tuple[int,list[float]]":
+  X = check_array(dataset)
   values = []
   for i in range(min_nc, max_nc + 1):
     est = estimator(n_clusters = i, random_state = 42, **est_args)
-    est.fit(dataset)
-    y_pred = est.predict(dataset)
+    est.fit(X)
+    y_pred = est.predict(X)
     value = 0
     if method == 'dunn':
-      value = dunn_score(dataset, y_pred)
+      value = dunn_score(X, y_pred)
     elif method == 'sil':
-      value = silhouette_score(dataset, y_pred)
+      value = silhouette_score(X, y_pred)
     values.append(value)
   ng = int(values.index(max(values)) + min_nc)
   index = values
@@ -121,16 +125,17 @@ def get_n_groups_min_diff(
   max_nc: int,
   **est_args: dict
 ):
+  X = check_array(dataset)
   values = []
   for i in range(min_nc, max_nc + 1):
     est = estimator(n_clusters = i, random_state = 42,**est_args)
-    est.fit(dataset)
-    y_pred = est.predict(dataset)
+    est.fit(X)
+    y_pred = est.predict(X)
     value = 0
     if method == 'sddis':
-      value = sd_dis_score(dataset,y_pred)
+      value = sd_dis_score(X,y_pred)
     elif method == 'davies':
-      value = davies_bouldin_score(dataset,y_pred)
+      value = davies_bouldin_score(X,y_pred)
     values.append(value)
   ng = int(values.index(min(values)) + min_nc)
   index = values
