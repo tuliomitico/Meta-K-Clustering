@@ -74,7 +74,8 @@ def dunn_score(
 
     for i in range(num_cluster-1):
         cluster_member = X[labels == i]
-        diam.append(np.max(distance.pdist(cluster_member)))
+        intra_dist = distance.pdist(cluster_member)
+        diam.append(np.max(intra_dist) if intra_dist.size else np.asarray([0],dtype='uint8'))
         for j in range(i+1,num_cluster):
             cluster_member2 = X[labels == j]
             diameter = distance.pdist(cluster_member2)
