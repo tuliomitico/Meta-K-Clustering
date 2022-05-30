@@ -19,7 +19,8 @@ def get_n_groups_information_criteria(
   dataset: Union[pd.DataFrame,np.ndarray],
   method: Literal['aic','bic'],
   min_nc: int,
-  max_nc: int
+  max_nc: int,
+  step: int = 1
 ):
   """Gets the number of groups through the Gaussian Mixture model.
 
@@ -39,7 +40,7 @@ def get_n_groups_information_criteria(
   """
   X = check_array(dataset)
   values = []
-  for i in range(min_nc,max_nc + 1):
+  for i in range(min_nc, max_nc + 1, step):
     gm = GaussianMixture(
       n_components = i,
       covariance_type = 'full',
@@ -57,7 +58,7 @@ def get_n_groups_information_criteria(
       value = gm.aic(X)
     values.append(value)
 
-  ng = int(values.index(min(values)) + min_nc)
+  ng = int(values.index(min(values)) * step + min_nc)
   index = values
   return ng, index
 
@@ -67,11 +68,12 @@ def get_n_groups_elbow_technique(
   estimator: ClusterMixin,
   min_nc:int,
   max_nc:int,
+  step: int = 1,
   **est_args: dict
 ) -> "tuple[int,list[float]]":
   X = check_array(dataset)
   wgss = []
-  for i in range(min_nc, max_nc + 1):
+  for i in range(min_nc, max_nc + 1, step):
     est = estimator(n_clusters = i, random_state = 42, **est_args)
     est.fit(X)
     y_pred = est.predict(X)
@@ -81,15 +83,15 @@ def get_n_groups_elbow_technique(
   p1x = min_nc
   p1y = wgss[0]
   p2x = max_nc
-  p2y = wgss[max_nc - min_nc]
-  for i in range(max_nc - 1):
+  p2y = wgss[(max_nc - min_nc) // step]
+  for i in range((max_nc - 1) // step):
     x = min_nc + i
     y = wgss[i]
     x_diff = p2x - p1x
     y_diff = p2y - p1y
     num = abs(y_diff*x - x_diff*y + p2x*p1y - p2y*p1x)
     distances.append(num)
-  ng = int(distances.index(max(distances)) + min_nc)
+  ng = int(distances.index(max(distances)) * step + min_nc)
   index = wgss
   return ng, index
 
@@ -99,11 +101,12 @@ def get_n_groups_max_diff(
   method: Literal['dunn','sil'],
   min_nc:int,
   max_nc:int,
+  step: int = 1,
   **est_args: dict
 ) -> "tuple[int,list[float]]":
   X = check_array(dataset)
   values = []
-  for i in range(min_nc, max_nc + 1):
+  for i in range(min_nc, max_nc + 1, step):
     est = estimator(n_clusters = i, random_state = 42, **est_args)
     est.fit(X)
     y_pred = est.predict(X)
@@ -113,7 +116,7 @@ def get_n_groups_max_diff(
     elif method == 'sil':
       value = silhouette_score(X, y_pred)
     values.append(value)
-  ng = int(values.index(max(values)) + min_nc)
+  ng = int(values.index(max(values)) * step + min_nc)
   index = values
   return ng, index
 
@@ -123,11 +126,12 @@ def get_n_groups_min_diff(
   method: Literal['sddis','davies'],
   min_nc: int,
   max_nc: int,
+  step: int = 1,
   **est_args: dict
 ):
   X = check_array(dataset)
   values = []
-  for i in range(min_nc, max_nc + 1):
+  for i in range(min_nc, max_nc + 1, step):
     est = estimator(n_clusters = i, random_state = 42,**est_args)
     est.fit(X)
     y_pred = est.predict(X)
@@ -137,6 +141,6 @@ def get_n_groups_min_diff(
     elif method == 'davies':
       value = davies_bouldin_score(X,y_pred)
     values.append(value)
-  ng = int(values.index(min(values)) + min_nc)
+  ng = int(values.index(min(values)) * step + min_nc)
   index = values
   return ng, index
