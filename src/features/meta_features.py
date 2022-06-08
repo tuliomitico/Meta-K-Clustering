@@ -47,7 +47,8 @@ def extract_meta_features(dataset: pd.DataFrame) -> np.ndarray:
   minimum, maximum = P.min(), P.max()
 
   P_linha = (P - minimum) / (maximum - minimum)
-  # !70 is the value obtained by the function in make_dataset named number bins function
+  # !70 is the value obtained by the function in make_dataset named number bins
+  # !function
   dataset_hist, _ = np.histogram(P_linha,70)
 
   return dataset_hist
@@ -56,13 +57,15 @@ def generate_make_metadataset(path_in: str, path_out: str) -> None:
   filepath = Path(path_in).glob('*.csv')
   raw_dict = {}
   for file in filepath:
-    # Unfortunally, my personal computer cannot make such a big array in the order of 1e6x1e6
+    # Unfortunally, my personal computer cannot make such a big array
+    # in the order of 1e6x1e6
     if file.name.startswith('Airlines'):
       continue
     dataset = pd.read_csv(file)
     raw_dict[file.stem] = extract_meta_features(dataset)
 
   metadataset = pd.DataFrame().from_dict(data = raw_dict,orient='index')
+  print(metadataset.head(20))
   if Path(path_out).exists():
-    metadataset.to_csv(path_out + "metadataset.csv",index=False)
+    metadataset.to_csv(path_or_buf = path_out + "metadataset.csv", index = True)
   return metadataset
