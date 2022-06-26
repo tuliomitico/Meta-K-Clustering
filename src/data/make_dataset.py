@@ -2,10 +2,10 @@ import os
 from pathlib import Path
 from typing import NamedTuple
 
-from sklearn.datasets import fetch_openml
-from sklearn.utils import check_array
 import numpy as np
 import pandas as pd
+from sklearn.datasets import fetch_openml
+from sklearn.utils import check_array
 
 from ..utils.dataset_ids import DATASETS
 
@@ -19,6 +19,7 @@ class Details(TypedDict):
   """
   name: str
   version: str
+
 class OpenMLData(NamedTuple):
   """A class to mapping a dataset from OpenMl site.
   """
