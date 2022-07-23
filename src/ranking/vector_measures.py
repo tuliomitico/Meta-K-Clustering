@@ -20,7 +20,8 @@ def get_n_groups_information_criteria(
   method: Literal['aic','bic'],
   min_nc: int,
   max_nc: int,
-  step: int = 1
+  step: int = 1,
+  random_state = None
 ):
   """Gets the number of groups through the Gaussian Mixture model.
 
@@ -37,6 +38,15 @@ def get_n_groups_information_criteria(
 
   max_nc : int
       The maximum number of cluster to be calculated in a given range.
+
+  step: int
+      The interval between each number of cluster.
+
+  random_state: int, RandomState instance, default = None
+        Determines random number generation for cluster initialization. Use
+        an int to make randomness deterministic.
+        See :term:`Glossary <random_state>`.
+
   """
   X = check_array(dataset)
   values = []
@@ -48,7 +58,7 @@ def get_n_groups_information_criteria(
       reg_covar=0.000001,
       max_iter=100,
       n_init=1,
-      random_state=42
+      random_state=random_state
     )
     gm.fit(X)
     value = 0
@@ -69,12 +79,13 @@ def get_n_groups_elbow_technique(
   min_nc:int,
   max_nc:int,
   step: int = 1,
+  random_state = None,
   **est_args: dict
 ) -> "tuple[int,list[float]]":
   X = check_array(dataset)
   wgss = []
   for i in range(min_nc, max_nc + 1, step):
-    est = estimator(n_clusters = i, random_state = 42, **est_args)
+    est = estimator(n_clusters = i, random_state = random_state, **est_args)
     est.fit(X)
     y_pred = est.predict(X)
     elbow = wgss_score(X, y_pred)
@@ -102,12 +113,13 @@ def get_n_groups_max_diff(
   min_nc:int,
   max_nc:int,
   step: int = 1,
+  random_state = None,
   **est_args: dict
 ) -> "tuple[int,list[float]]":
   X = check_array(dataset)
   values = []
   for i in range(min_nc, max_nc + 1, step):
-    est = estimator(n_clusters = i, random_state = 42, **est_args)
+    est = estimator(n_clusters = i, random_state = random_state, **est_args)
     est.fit(X)
     y_pred = est.predict(X)
     value = 0
@@ -127,12 +139,13 @@ def get_n_groups_min_diff(
   min_nc: int,
   max_nc: int,
   step: int = 1,
+  random_state = None,
   **est_args: dict
 ):
   X = check_array(dataset)
   values = []
   for i in range(min_nc, max_nc + 1, step):
-    est = estimator(n_clusters = i, random_state = 42,**est_args)
+    est = estimator(n_clusters = i, random_state = random_state, **est_args)
     est.fit(X)
     y_pred = est.predict(X)
     value = 0
