@@ -13,10 +13,7 @@ from sklearn.preprocessing import LabelEncoder
 
 def evaluate_metamodel(
   X: pd.DataFrame, y: pd.DataFrame, repeats: Integral = 30
-) -> """tuple[
-  defaultdict[str,list],defaultdict[str,list],
-  defaultdict[str,list],defaultdict[str,list]
-]""":
+) -> """tuple[pd.DataFrame,pd.DataFrame,pd.DataFrame]""":
   """Evaluate a meta classifier through a repeatead 10-fold
 
   Parameters
@@ -35,7 +32,7 @@ def evaluate_metamodel(
   """
   random_state = 81
   cv = RepeatedKFold(n_splits=10,n_repeats=repeats,random_state=random_state)
-  model = KNeighborsClassifier(n_neighbors=10,n_jobs=4)
+  model = KNeighborsClassifier(n_neighbors=10,n_jobs=6)
   encoder = LabelEncoder()
 
   scores_acc = []
@@ -87,11 +84,27 @@ def evaluate_metamodel(
     aux = j + 10
     if aux <= cv.get_n_splits():
       if aux % 10 == 0:
-        table_acc["Accuracy_mean"]
-        table_acc["Accuracy_std"]
-        table_precision["Precision_mean"]
-        table_precision["Precision_std"]
-        table_recall["Recall_mean"]
-        table_recall["Recall_std"]
-        table_acc["_mean"]
-  return table_acc, table_precision, table_recall, table_cm
+        table_acc["Accuracy_mean"].append(np.mean(scores_acc[j:aux]))
+        table_acc["Accuracy_std"].append(np.std(scores_acc[j:aux]))
+        table_precision["Precision_mean"].append(np.mean(scores_precision[j:aux]))
+        table_precision["Precision_std"].append(np.std(scores_precision[j:aux]))
+        table_recall["Recall_mean"].append(np.mean(scores_recall[j:aux]))
+        table_recall["Recall_std"].append(np.std(scores_recall[j:aux]))
+        # table_acc["_mean"]
+
+  rounds = pd.Index(["Rodada(s) {}".format(i) for i in range(1,31)])
+
+  accuracy_df = pd.DataFrame(data=table_acc, index=rounds)
+  accuracy_df.columns = ['Accuracy mean +/-','Accuracy std +/-']
+  accuracy_df.loc['Total'] = [np.mean(scores_acc),np.std(scores_acc)]
+
+  precision_df = pd.DataFrame(data=table_precision, index=rounds)
+  precision_df.columns = ['Precision mean +/-','Precision std +/-']
+  precision_df.loc['Total'] = [np.mean(scores_precision),np.std(scores_precision)]
+
+  recall_df = pd.DataFrame(data=table_recall, index=rounds)
+  recall_df.columns = ['Recall mean +/-','Recall std +/-']
+  recall_df.loc['Total'] = [np.mean(scores_recall),np.std(scores_recall)]
+
+
+  return accuracy_df, precision_df, recall_df
