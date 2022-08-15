@@ -4,7 +4,7 @@ from numbers import Integral
 import numpy as np
 import pandas as pd
 from sklearn.metrics import (
-  accuracy_score, confusion_matrix, precision_score, recall_score
+  accuracy_score, f1_score, precision_score, recall_score
 )
 from sklearn.model_selection import RepeatedKFold
 from sklearn.neighbors import KNeighborsClassifier
@@ -38,12 +38,12 @@ def evaluate_metamodel(
   scores_acc = []
   scores_precision = []
   scores_recall = []
-  scores_cm = []
+  scores_f1 = []
 
   table_acc = defaultdict(list)
   table_precision = defaultdict(list)
   table_recall = defaultdict(list)
-  table_cm = defaultdict(list)
+  table_f1 = defaultdict(list)
 
   for i, (train, test) in enumerate(cv.split(X,y)):
     X_train, X_test = X.values[train], X.values[test]
@@ -77,8 +77,8 @@ def evaluate_metamodel(
     )
     scores_recall.append(score_recall)
 
-    score_cm = confusion_matrix(true, pred)
-    scores_cm.append(score_cm)
+    score_f1 = f1_score(true, pred, average='micro', zero_division='warn')
+    scores_f1.append(score_f1)
 
   for j in range(0,cv.get_n_splits(),10):
     aux = j + 10
@@ -90,6 +90,8 @@ def evaluate_metamodel(
         table_precision["Precision_std"].append(np.std(scores_precision[j:aux]))
         table_recall["Recall_mean"].append(np.mean(scores_recall[j:aux]))
         table_recall["Recall_std"].append(np.std(scores_recall[j:aux]))
+        table_f1["F1_mean"].append(np.mean(scores_f1[j:aux]))
+        table_f1["F1_std"].append(np.std(scores_f1[j:aux]))
         # table_acc["_mean"]
 
   rounds = pd.Index(["Rodada(s) {}".format(i) for i in range(1,31)])
@@ -106,5 +108,8 @@ def evaluate_metamodel(
   recall_df.columns = ['Recall mean +/-','Recall std +/-']
   recall_df.loc['Total'] = [np.mean(scores_recall),np.std(scores_recall)]
 
+  f1_df = pd.DataFrame(data=table_f1, index=rounds)
+  f1_df.columns = ['F1 mean +/-','F1 std +/-']
+  f1_df.loc['Total'] = [np.mean(scores_f1), np.std(scores_f1)]
 
-  return accuracy_df, precision_df, recall_df
+  return accuracy_df, precision_df, recall_df, f1_df
