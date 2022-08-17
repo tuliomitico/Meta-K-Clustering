@@ -1,7 +1,7 @@
-Meta K CLustering
+Meta K Clustering
 ===
 
-**Meta K Clustering** is Python tool for meta learning applied to clustering algorithms. It mix to concepts of auto learning given a dataset it predicts the most suitable cluster algorithm and number of clusters under characterization of the original data.
+**Meta K Clustering** is Python tool for meta learning applied to clustering algorithms. It mix the concepts of auto learning given a dataset it predicts the most suitable cluster algorithm and the number of clusters under characterization of the original data.
 
 ## Story
 ___
